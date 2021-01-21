@@ -1,0 +1,118 @@
+{
+  "project": {
+    "id": "",
+    "name": "",
+    "title": "",
+    "org": {
+      "id": "",
+      "name": "",
+      "ims_org_id": "",
+      "details": {
+        "services": [
+          {
+            "name": "Adobe Stock",
+            "code": "StockSDK"
+          },
+          {
+            "name": "PDF Embed API",
+            "code": "ViewSDK"
+          },
+          {
+            "name": "Lightroom Services",
+            "code": "LightroomPartnersSDK"
+          },
+          {
+            "name": "Image Cutout - Creative Cloud Automation Services",
+            "code": "ImageCutoutV2SDK"
+          },
+          {
+            "name": "Content and Commerce AI",
+            "code": "ccai-sdk"
+          },
+          {
+            "name": "Creative Cloud Libraries",
+            "code": "CC-Libraries-SDK"
+          },
+          {
+            "name": "Adobe Analytics",
+            "code": "AdobeAnalyticsSDK"
+          },
+          {
+            "name": "Task Queue Manager",
+            "code": "DvaQueueSDK"
+          },
+          {
+            "name": "Adobe Analytics",
+            "code": "AdobeAnalyticsSDK"
+          },
+          {
+            "name": "Smart Content",
+            "code": "MCSmartContentServicesSDK"
+          },
+          {
+            "name": "Privacy Service API",
+            "code": "McGdprSDK"
+          },
+          {
+            "name": "Asset Compute",
+            "code": "AssetComputeSDK"
+          },
+          {
+            "name": "Experience Platform Launch API",
+            "code": "McDtmSDK"
+          },
+          {
+            "name": "Cloud Manager",
+            "code": "CloudManagerSDK"
+          },
+          {
+            "name": "User Management API",
+            "code": "UserMgmtSDK"
+          },
+          {
+            "name": "I/O Events",
+            "code": "CloudIntegrationSDK"
+          },
+          {
+            "name": "Audience Manager API",
+            "code": "AudienceManagerCustomerSDK"
+          },
+          {
+            "name": "I/O Management API",
+            "code": "AdobeIOManagementAPISDK"
+          },
+          {
+            "name": "Adobe Target",
+            "code": "AdobeTargetSDK"
+          },
+          {
+            "name": "Places",
+            "code": "McPlacesSDK"
+          }
+        ]
+      }
+    },
+    "workspace": {
+      "id": "",
+      "name": "Production",
+      "title": "Production",
+      "action_url": "",
+      "app_url": "",
+      "details": {
+        "credentials": [
+          {
+            "id": "",
+            "name": "",
+            "integration_type": "service"
+          }
+        ],
+        "services": [
+          {
+            "code": "AdobeIOManagementAPISDK",
+            "name": "I/O Management API"
+          }
+        ]
+      }
+    }
+  }
+}
