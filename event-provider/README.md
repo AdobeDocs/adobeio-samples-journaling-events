@@ -1,6 +1,7 @@
-# 230MoccasinHalibut
+# Event Provider 
 
-Welcome to my Adobe I/O Application!
+This is a Project Firefly App for event provider, please set up project in console and populate the credentials as here
+Event provide contains a custom event provider generate events using alarm package 
 
 ## Setup
 
