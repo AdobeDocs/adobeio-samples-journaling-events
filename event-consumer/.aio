@@ -1,0 +1,118 @@
+{
+  "project": {
+    "id": "4566206088344593955",
+    "name": "764BlackSwallow",
+    "title": "jie custom event journal api project 2",
+    "org": {
+      "id": "301276",
+      "name": "Adobe IO DEMO DEV",
+      "ims_org_id": "3C9419175E9D393C0A495E39@AdobeOrg",
+      "details": {
+        "services": [
+          {
+            "name": "Adobe Stock",
+            "code": "StockSDK"
+          },
+          {
+            "name": "PDF Embed API",
+            "code": "ViewSDK"
+          },
+          {
+            "name": "Lightroom Services",
+            "code": "LightroomPartnersSDK"
+          },
+          {
+            "name": "Image Cutout - Creative Cloud Automation Services",
+            "code": "ImageCutoutV2SDK"
+          },
+          {
+            "name": "Content and Commerce AI",
+            "code": "ccai-sdk"
+          },
+          {
+            "name": "Creative Cloud Libraries",
+            "code": "CC-Libraries-SDK"
+          },
+          {
+            "name": "Adobe Analytics",
+            "code": "AdobeAnalyticsSDK"
+          },
+          {
+            "name": "Task Queue Manager",
+            "code": "DvaQueueSDK"
+          },
+          {
+            "name": "Adobe Analytics",
+            "code": "AdobeAnalyticsSDK"
+          },
+          {
+            "name": "Smart Content",
+            "code": "MCSmartContentServicesSDK"
+          },
+          {
+            "name": "Privacy Service API",
+            "code": "McGdprSDK"
+          },
+          {
+            "name": "Asset Compute",
+            "code": "AssetComputeSDK"
+          },
+          {
+            "name": "Experience Platform Launch API",
+            "code": "McDtmSDK"
+          },
+          {
+            "name": "Cloud Manager",
+            "code": "CloudManagerSDK"
+          },
+          {
+            "name": "User Management API",
+            "code": "UserMgmtSDK"
+          },
+          {
+            "name": "I/O Events",
+            "code": "CloudIntegrationSDK"
+          },
+          {
+            "name": "Audience Manager API",
+            "code": "AudienceManagerCustomerSDK"
+          },
+          {
+            "name": "I/O Management API",
+            "code": "AdobeIOManagementAPISDK"
+          },
+          {
+            "name": "Adobe Target",
+            "code": "AdobeTargetSDK"
+          },
+          {
+            "name": "Places",
+            "code": "McPlacesSDK"
+          }
+        ]
+      }
+    },
+    "workspace": {
+      "id": "4566206088344595237",
+      "name": "Production",
+      "title": "Production",
+      "action_url": "https://301276-764blackswallow.adobeioruntime.net",
+      "app_url": "https://301276-764blackswallow.adobeio-static.net",
+      "details": {
+        "credentials": [
+          {
+            "id": "133712",
+            "name": "jie_custom_event_journal_api_project_2_J_1610595528536",
+            "integration_type": "service"
+          }
+        ],
+        "services": [
+          {
+            "code": "AdobeIOManagementAPISDK",
+            "name": "I/O Management API"
+          }
+        ]
+      }
+    }
+  }
+}
