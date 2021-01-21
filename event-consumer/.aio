@@ -1,12 +1,12 @@
 {
   "project": {
-    "id": "4566206088344593955",
-    "name": "764BlackSwallow",
+    "id": "",
+    "name": "",
     "title": "jie custom event journal api project 2",
     "org": {
-      "id": "301276",
+      "id": "",
       "name": "Adobe IO DEMO DEV",
-      "ims_org_id": "3C9419175E9D393C0A495E39@AdobeOrg",
+      "ims_org_id": "",
       "details": {
         "services": [
           {
@@ -93,16 +93,16 @@
       }
     },
     "workspace": {
-      "id": "4566206088344595237",
+      "id": "",
       "name": "Production",
       "title": "Production",
-      "action_url": "https://301276-764blackswallow.adobeioruntime.net",
-      "app_url": "https://301276-764blackswallow.adobeio-static.net",
+      "action_url": "",
+      "app_url": "",
       "details": {
         "credentials": [
           {
-            "id": "133712",
-            "name": "jie_custom_event_journal_api_project_2_J_1610595528536",
+            "id": "",
+            "name": "",
             "integration_type": "service"
           }
         ],
