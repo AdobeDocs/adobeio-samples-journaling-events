@@ -13,41 +13,30 @@
 const { Core, Events, State } = require('@adobe/aio-sdk')
 const { context, getToken } = require('@adobe/aio-lib-ims')
 const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('../utils')
-
-const request = require('request')
+const fetch = require('node-fetch')
 
 async function sendToSlack(slackWebhook, slackChannel, msg) {
   var slackMessage = " Event received: " + msg;
-  return new Promise(function (resolve, reject) {
-    var payload = {
-      "channel": slackChannel,
-      "text": slackMessage,
-    }
+  var payload = {
+    "channel": slackChannel,
+    "text": slackMessage,
+  }
 
-    var options = {
-      method: 'POST',
-      url: slackWebhook,
-      headers:
-          { 'Content-type': 'application/json' },
-      body: JSON.stringify(payload)
-    }
+  var options = {
+    method: 'POST',
+    headers:
+        { 'Content-type': 'application/json' },
+    body: JSON.stringify(payload)
+  }
 
-    request(options, function (error, response, body) {
-      if (error) {
-        reject(error)
-
-      } else {
-        resolve(response)
-      }
-    })
-  })
+  return await fetch(slackWebhook, options)
 }
 
 async function fetchEvent(params, token, since) {
   const eventsClient = await Events.init(params.ims_org_id, params.apiKey, token)
 
   let options = {}
-  if(since != null) {
+  if(since != undefined) {
     options.since = since
   }
   journalling = await eventsClient.getEventsFromJournal(params.journalling_url, options)
@@ -74,7 +63,7 @@ async function getLatestEventPosition(params) {
   const stateCLient = await State.init()
   const events = await stateCLient.get(params.db_event_key)
   if (events === undefined) {
-    return null
+    return undefined
   } else {
     return events.value.latest.position
   }
@@ -108,16 +97,18 @@ async function main (params) {
 
 
     var latestEventPos = await getLatestEventPosition(params)
-    logger.info("Fetch Event since position: " + latestEventPos)
-    var events = await fetchEvent(params, token, latestEventPos)
+    if (latestEventPos === undefined) {
+      logger.info("Fetch Event since first position")
+    } else {
+      logger.info("Fetch Event since position: " + latestEventPos)
+    }
 
     var fetch_cnt = 0
+    var events = await fetchEvent(params, token, latestEventPos)
     while (events != undefined) {
-      logger.info("Got an event, send it to slack and save to DB, event position is: " + events[events.length - 1].position)
       await saveToDb(params, events)
       msg = JSON.stringify(events)
       if (params.slack_webhook != undefined && params.slack_channel != undefined) {
-        logger.info("============== send to slack")
         await sendToSlack(params.slack_webhook, params.slack_channel, msg)
       }
       
