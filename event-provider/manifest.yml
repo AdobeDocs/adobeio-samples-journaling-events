@@ -18,7 +18,6 @@ packages:
           ims_org_id: $IMS_ORG_ID
           private_key: $PRIVATE_KEY
         annotations:
-          require-adobe-auth: false
           final: true
     triggers:
       everyMin:
