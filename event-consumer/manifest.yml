@@ -2,8 +2,8 @@ packages:
   __APP_PACKAGE__:
     license: Apache-2.0
     actions:
-      generic:
-        function: actions/generic/index.js
+      event_consumer:
+        function: actions/event_consumer/index.js
         web: 'yes'
         runtime: 'nodejs:12'
         inputs:
@@ -34,4 +34,4 @@ packages:
     rules:
       everyMinRule:
         trigger: everyMin
-        action: generic
+        action: event_consumer

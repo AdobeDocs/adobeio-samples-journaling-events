@@ -22,7 +22,7 @@ Core.Logger.mockReturnValue(mockLoggerInstance)
 
 jest.mock('node-fetch')
 const fetch = require('node-fetch')
-const action = require('./../../actions/generic/index.js')
+const action = require('./../../actions/event_consumer/index.js')
 
 beforeEach(() => {
   Core.Logger.mockClear()
@@ -32,7 +32,7 @@ beforeEach(() => {
 })
 
 const fakeParams = { __ow_headers: { authorization: 'Bearer fake' } }
-describe('generic', () => {
+describe('event_consumer', () => {
   test('main should be defined', () => {
     expect(action.main).toBeInstanceOf(Function)
   })
