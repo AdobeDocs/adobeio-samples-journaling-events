@@ -1,6 +1,14 @@
 /*
-* <license header>
-*/
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
 
 /**
  * This is a sample action showcasing how to access an external API
@@ -12,27 +20,18 @@
  *   - The two steps above imply that every client knowing the URL to this deployed action will be able to invoke it without any authentication and authorization checks against Adobe Identity Management System
  *   - Make sure to validate these changes against your security requirements before deploying the action
  */
-
-const fetch = require('node-fetch')
-const { Core, Events } = require('@adobe/aio-sdk')
+const { Core, Events, State } = require('@adobe/aio-sdk')
 const { context, getToken } = require('@adobe/aio-lib-ims')
-const stateLib = require('@adobe/aio-lib-state')
 const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('../utils')
 
-const slackWebhook = "https://hooks.slack.com/services/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"
-const slackChannel = "Jie Yu"
 const request = require('request')
 
-
-
-async function sendToSlack(msg) {
+async function sendToSlack(slackWebhook, slackChannel, msg) {
   var slackMessage = " Event received: " + msg;
   return new Promise(function (resolve, reject) {
     var payload = {
       "channel": slackChannel,
-      "username": "incoming-webhook",
       "text": slackMessage,
-      "mrkdwn": true,
     }
 
     var options = {
@@ -50,7 +49,6 @@ async function sendToSlack(msg) {
       } else {
         resolve(response)
       }
-
     })
   })
 }
@@ -58,37 +56,37 @@ async function sendToSlack(msg) {
 async function fetchEvent(params, token, since) {
   const eventsClient = await Events.init(params.ims_org_id, params.apiKey, token)
 
-  if (since == null) {
-    journalling = await eventsClient.getEventsFromJournal(params.journalling_url)
-  } else {
-    journalling = await eventsClient.getEventsFromJournal(params.journalling_url, {since: since})
+  let options = {}
+  if(since != null) {
+    options.since = since
   }
+  journalling = await eventsClient.getEventsFromJournal(params.journalling_url, options)
   
-  return journalling.events[0]
+  return journalling.events
 }
 
-async function saveToDb(params, event) {
-  const state = await stateLib.init()
+async function saveToDb(params, new_events) {
+  const stateCLient = await State.init()
 
 
-  var events = await state.get(params.db_event_key) 
+  var events = await stateCLient.get(params.db_event_key) 
   if (events === undefined) {
-    events = {latest: event, events: [event]}
+    events = {latest: new_events[new_events.length - 1], events: new_events}
   } else {
     events = events.value
-    events.latest = event
-    events.events.push(event)
+    events.latest = new_events[new_events.length - 1]
+    events.events.push(new_events)
   }
-  await state.put(params.db_event_key, events, { ttl: -1 })
+  await stateCLient.put(params.db_event_key, events, { ttl: -1 })
 }
 
-async function getLatestEvent(params) {
-  const state = await stateLib.init()
-  const events = await state.get(params.db_event_key)
+async function getLatestEventPosition(params) {
+  const stateCLient = await State.init()
+  const events = await stateCLient.get(params.db_event_key)
   if (events === undefined) {
     return null
   } else {
-    return events.value.latest
+    return events.value.latest.position
   }
 }
 
@@ -119,23 +117,28 @@ async function main (params) {
     const token = await getToken()
 
 
-    var latestEvent = await getLatestEvent(params)
-    var event = await fetchEvent(params, token, latestEvent.position)
+    var latestEventPos = await getLatestEventPosition(params)
+    logger.info("Fetch Event since position: " + latestEventPos)
+    var events = await fetchEvent(params, token, latestEventPos)
 
     var fetch_cnt = 0
-    while (event != null) {
-      logger.info("Got an event, send it to slack and save to DB, event position is: " + event.position)
-      await saveToDb(params, event)
-      msg = JSON.stringify(event)
-      await sendToSlack(msg)
+    while (events != undefined) {
+      logger.info("Got an event, send it to slack and save to DB, event position is: " + events[events.length - 1].position)
+      await saveToDb(params, events)
+      msg = JSON.stringify(events)
+      if (params.slack_webhook != undefined && params.slack_channel != undefined) {
+        logger.info("============== send to slack")
+        await sendToSlack(params.slack_webhook, params.slack_channel, msg)
+      }
+      
       fetch_cnt = fetch_cnt + 1
       if (fetch_cnt >= params.max_events_in_batch) {
         break
       }
-      event = await fetchEvent(params, token, event.position)
+      events = await fetchEvent(params, token, events[events.length - 1].position)
     }
     
-    return event
+    return events
 
   } catch (error) {
     // log any server errors

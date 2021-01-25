@@ -21,6 +21,8 @@ packages:
           journalling_url: $JOURNALLING_URL
           db_event_key: $DB_EVENT_KEY
           max_events_in_batch: $MAX_EVENTS_IN_BATCH
+          slack_webhook: $SLACK_WEBHOOK
+          slack_channel: $SLACK_CHANNEL
         annotations:
           require-adobe-auth: false
           final: true
