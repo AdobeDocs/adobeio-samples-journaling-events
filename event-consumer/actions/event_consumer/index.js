@@ -104,14 +104,17 @@ async function main (params) {
     }
 
     var fetch_cnt = 0
+    var total_event_num = 0
     var events = await fetchEvent(params, token, latestEventPos)
     while (events != undefined) {
+      logger.info("Got %d events, send it to slack and save to DB, last event position is: %s", events.length, events[events.length - 1].position)
       await saveToDb(params, events)
       msg = JSON.stringify(events)
       if (params.slack_webhook != undefined && params.slack_channel != undefined) {
         await sendToSlack(params.slack_webhook, params.slack_channel, msg)
       }
-      
+
+      total_event_num = total_event_num + events.length
       fetch_cnt = fetch_cnt + 1
       if (fetch_cnt >= params.max_events_in_batch) {
         break
@@ -119,7 +122,7 @@ async function main (params) {
       events = await fetchEvent(params, token, events[events.length - 1].position)
     }
     
-    return events
+    return { event_fetched: total_event_num }
 
   } catch (error) {
     // log any server errors

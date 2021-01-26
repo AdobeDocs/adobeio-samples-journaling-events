@@ -4,7 +4,6 @@ packages:
     actions:
       event_consumer:
         function: actions/event_consumer/index.js
-        web: 'no'
         runtime: 'nodejs:12'
         inputs:
           LOG_LEVEL: debug
