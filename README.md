@@ -1,4 +1,4 @@
-# adobeio-samples-custom-events-using-journaling
+# adobeio-samples-journaling-events
 
 Welcome to my Adobe I/O Application! By reading this repo, we assume that you already know basic Project Firefly App development 
 If not, please refer to [Project Firefly Developer Guide](https://github.com/AdobeDocs/project-firefly)
