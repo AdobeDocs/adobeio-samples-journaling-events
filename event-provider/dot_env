@@ -1,0 +1,14 @@
+AIO_runtime_auth=
+AIO_runtime_namespace=
+AIO_runtime_apihost=https://adobeioruntime.net
+
+SERVICE_API_KEY=
+
+PROVIDER_ID=
+EVENT_CODE=
+CLIENT_ID=
+CLIENT_SECRET=
+TECH_ACCOUNT_EMAIL=
+TECH_ACCOUNT_ID=
+IMS_ORG_ID=
+PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nmy\nprivate\nkey\n-----END PRIVATE KEY-----"

@@ -1,0 +1,12 @@
+{
+    "name": "customer-event-alarm-package",
+    "description": "customer-event-alarm-package",
+    "delivery_type": "JOURNAL",
+    "webhook_url": "",
+    "events_of_interest": [
+        {
+        "provider_id": "d66738dc-24d7-42eb-b69a-f22e0d4e5d02",
+        "event_code": "alarm"
+        }
+    ]
+}
