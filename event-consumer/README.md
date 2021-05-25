@@ -6,6 +6,8 @@ Event consumer contains an alarm runtime action periodically pulling from jouran
 
 - Populate the `.env` file in the project root and fill it as shown [below](#env)
 
+Note: please read the dotenv file here as a reference on how to pass the private key into the action, make sure you fill newline break with \n and don't forget the double quotes for the private key in .env
+
 ## Local Dev
 
 - `aio app run` to start your local Dev server
