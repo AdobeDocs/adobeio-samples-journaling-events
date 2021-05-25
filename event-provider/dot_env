@@ -11,4 +11,5 @@ CLIENT_SECRET=
 TECH_ACCOUNT_EMAIL=
 TECH_ACCOUNT_ID=
 IMS_ORG_ID=
+//make sure you fill newline break with \n and don't forget the double quotes for the private key in .env
 PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nmy\nprivate\nkey\n-----END PRIVATE KEY-----"
