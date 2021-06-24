@@ -4,7 +4,7 @@ packages:
     actions:
       publish-events:
         function: actions/publish-events/index.js
-        runtime: 'nodejs:12'
+        runtime: 'nodejs:14'
         inputs:
           LOG_LEVEL: debug
           apiKey: $SERVICE_API_KEY
