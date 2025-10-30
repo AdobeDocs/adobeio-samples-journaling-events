@@ -1,134 +1,126 @@
-/*
- * Copyright 2021 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-const { Core, Events, State } = require('@adobe/aio-sdk')
+const { Core, Events } = require('@adobe/aio-sdk')
+const stateLib = require('@adobe/aio-lib-state')
+const { errorResponse } = require('../utils')
 const { context, getToken } = require('@adobe/aio-lib-ims')
-const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('../utils')
 const fetch = require('node-fetch')
 
-async function sendToSlack(slackWebhook, slackChannel, msg) {
-  var slackMessage = " Event received: " + msg;
-  var payload = {
-    "channel": slackChannel,
-    "text": slackMessage,
+/*
+ * Retrieves an access token using IMS technical account credentials.
+ *
+ * @param {Object} params - Parameters containing IMS credentials and scopes.
+ * @param {string} params.client_id - Client ID.
+ * @param {string} params.client_secret - Client secret.
+ * @param {string} params.ims_org_id - IMS organization ID.
+ * @param {string} params.technical_account_id - Technical account ID.
+ * @param {string} params.technical_account_email - Technical account email.
+ * @param {Array<string>} params.scopes - Array of IMS scopes.
+ * @returns {Promise<string>} - The access token.
+ */
+async function getAccessToken(params) {
+  const scopesArray = params.scopes
+  const config = {
+    client_id: params.client_id,
+    client_secrets: [params.client_secret], // must be an array for aio-lib-ims
+    ims_org_id: params.ims_org_id,
+    technical_account_id: params.technical_account_id,
+    technical_account_email: params.technical_account_email,
+    scopes: scopesArray
   }
 
-  var options = {
-    method: 'POST',
-    headers:
-        { 'Content-type': 'application/json' },
-    body: JSON.stringify(payload)
-  }
+  // Set the IMS context and mark it as current
+  await context.set('my_event_provider', config)
+  await context.setCurrent('my_event_provider')
 
-  return await fetch(slackWebhook, options)
+  const token = await getToken()
+  return token
 }
 
-async function fetchEvent(params, token, since) {
-  const eventsClient = await Events.init(params.ims_org_id, params.apiKey, token)
+/*
+ * Fetches events from an Adobe I/O Events journalling endpoint.
+ *
+ * @param {Object} params - Parameters containing journalling credentials.
+ * @param {string} params.ims_org_id - IMS organization ID.
+ * @param {string} params.apiKey - API key for the integration.
+ * @param {string} params.journalling_url - URL to the journalling endpoint.
+ * @param {string} accessToken - IMS access token.
+ * @param {string} [sincePosition] - Optional journal position to fetch events from.
+ * @returns {Promise<Array<Object>>} - Array of fetched events.
+ */
+async function fetchEvent(params, accessToken, sincePosition) {
+  const { ims_org_id, apiKey, journalling_url } = params
 
-  let options = {}
-  if(since != undefined) {
-    options.since = since
+  if (!ims_org_id || !apiKey || !accessToken || !journalling_url) {
+    throw new Error('Missing Adobe I/O credentials in action params')
   }
-  journalling = await eventsClient.getEventsFromJournal(params.journalling_url, options)
-  
-  return journalling.events
+
+  const eventsClient = await Events.init(ims_org_id, apiKey, accessToken)
+
+  const options = {}
+  if (sincePosition) {
+    options.since = sincePosition  // Only fetch events newer than this position
+  }
+
+  options.limit = 100 // Limit to 100 events per fetch
+  const journalling = await eventsClient.getEventsFromJournal(journalling_url, options)
+  return journalling.events || []
 }
 
-async function saveToDb(params, new_events) {
-  const stateCLient = await State.init()
-
-
-  var events = await stateCLient.get(params.db_event_key) 
-  if (events === undefined) {
-    events = {latest: new_events[new_events.length - 1], events: new_events}
-  } else {
-    events = events.value
-    events.latest = new_events[new_events.length - 1]
-    events.events.push(new_events)
-  }
-  await stateCLient.put(params.db_event_key, events, { ttl: -1 })
-}
-
-async function getLatestEventPosition(params) {
-  const stateCLient = await State.init()
-  const events = await stateCLient.get(params.db_event_key)
-  if (events === undefined) {
-    return undefined
-  } else {
-    return events.value.latest.position
-  }
-}
-
-// main function that will be executed by Adobe I/O Runtime
-async function main (params) {
-  // create a Logger
+/*
+ * Main function for Adobe I/O Runtime action.
+ * Fetches events from a journalling endpoint, logs them, and stores journal position.
+ *
+ * @param {Object} params - Input parameters for the action.
+ * @returns {Promise<Object>} - Result with success flag and event details.
+ */
+async function main(params) {
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
+  logger.info('Fetching events from journalling endpoint...')
 
   try {
-    // 'info' is the default level if not set
-    logger.info('Calling the main action')
-
-    // log parameters, only if params.LOG_LEVEL === 'debug'
-    logger.debug(stringParameters(params))
-
-    const config = {
-      client_id: params.client_id,
-      client_secret: params.client_secret,
-      technical_account_email: params.technical_account_email,
-      technical_account_id: params.technical_account_id,
-      meta_scopes: ['ent_adobeio_sdk'],
-      ims_org_id: params.ims_org_id,
-      private_key: params.private_key
-    };
-    await context.set('my_event_provider', config)
-    await context.setCurrent('my_event_provider')
-
-    const token = await getToken()
-
-
-    var latestEventPos = await getLatestEventPosition(params)
-    if (latestEventPos === undefined) {
-      logger.info("Fetch Event since first position")
-    } else {
-      logger.info("Fetch Event since position: " + latestEventPos)
+    // Acquire IMS access token
+    const accessToken = await getAccessToken(params)
+    if (!accessToken) {
+      throw new Error('Missing access_token in params')
     }
 
-    var fetch_cnt = 0
-    var total_event_num = 0
-    var events = await fetchEvent(params, token, latestEventPos)
-    while (events != undefined) {
-      logger.info("Got %d events, send it to slack and save to DB, last event position is: %s", events.length, events[events.length - 1].position)
-      await saveToDb(params, events)
-      msg = JSON.stringify(events)
-      if (params.slack_webhook != undefined && params.slack_channel != undefined) {
-        await sendToSlack(params.slack_webhook, params.slack_channel, msg)
-      }
+    // Initialize state store using Adobe I/O Runtime credentials
+    const state = await stateLib.init()
 
-      total_event_num = total_event_num + events.length
-      fetch_cnt = fetch_cnt + 1
-      if (fetch_cnt >= params.max_events_in_batch) {
-        break
-      }
-      events = await fetchEvent(params, token, events[events.length - 1].position)
+    // Retrieve the last journal position from the state store
+    const lastPositionRes = await state.get(params.db_event_key)
+    const lastPosition = lastPositionRes ? lastPositionRes.value : undefined
+    logger.info(`Last Position >>>` + lastPosition)
+
+    // Fetch new events from journal starting from the last position
+    const events = await fetchEvent(params, accessToken, lastPosition)
+    logger.info(`Fetched ${events.length} new event(s).`)
+
+    if (events.length > 0) {
+      // Loop through each event and log key details
+      events.forEach((event, index) => {
+        logger.info(`--- Event #${index + 1} ---`)
+        logger.info(`Raw Payload:\n${JSON.stringify(event, null, 2)}`)
+
+        // Extract and log commonly used fields if present
+        if (event.event) {
+          logger.info(`Event ID: ${event.event.id}`)
+          logger.info(`Type: ${event.event.type}`)
+          logger.info(`Time: ${event.event.time}`)
+
+       
+        }
+      })
+
+      // Save the journal position of the last event processed
+      const newestPosition = events[events.length - 1].position
+      await state.put(params.db_event_key, newestPosition)
+      logger.info(`Updated last processed position: ${newestPosition}`)
     }
-    
-    return { event_fetched: total_event_num }
 
+    return { success: true, events_fetched: events.length, events }
   } catch (error) {
-    // log any server errors
-    logger.error(error)
-    // return with 500
-    return errorResponse(500, 'server error', logger)
+    logger.error('Fetch failed with error:', error)
+    return errorResponse(500, error.message, logger)
   }
 }
 
